@@ -1556,20 +1556,26 @@ if (rawDate) {
 
     // Conclusion
 
-    setFont('bold', 8); doc.text('Conclusion & consignes:', margin, y);
+    setFont('bold', 8);
+    doc.text('Conclusion & consignes:', margin, y);
+    // Measure label width dynamically so value starts right after
+    const conclusionLblW = doc.getTextWidth('Conclusion & consignes:');
 
     const conclusionText = v('conclusion');
     if (conclusionText) {
-      y += 5;
+      const conclusionStartY = y;
+      const conclusionX = margin + conclusionLblW + 2;
+      const conclusionLineW = contentW - conclusionLblW - 2;
       setFont('normal', 8);
-      const lines = doc.splitTextToSize(conclusionText, contentW);
-      lines.forEach(ln => {
-        doc.text(ln, margin, y);
-        line(margin, y + 1, W - margin, y + 1, [220,220,220], 0.15);
-        y += 5;
+      const lines = doc.splitTextToSize(conclusionText, conclusionLineW);
+      lines.forEach((ln, i) => {
+        doc.text(ln, i === 0 ? conclusionX : margin, conclusionStartY + i * 5);
+        line(margin, conclusionStartY + i * 5 + 1, W - margin, conclusionStartY + i * 5 + 1, [220,220,220], 0.15);
       });
+      y = conclusionStartY + lines.length * 5;
     } else {
-      line(margin + 42, y + 1, W - margin, y + 1, [200,200,200], 0.2);
+      const conclusionX = margin + conclusionLblW + 2;
+      line(conclusionX, y + 1, W - margin, y + 1, [200,200,200], 0.2);
       y += 5;
       line(margin, y + 1, W - margin, y + 1, [200,200,200], 0.2);
       y += 5;
