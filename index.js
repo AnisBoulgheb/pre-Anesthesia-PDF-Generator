@@ -1,3 +1,18 @@
+// MUST BE AT THE VERY TOP OF index.js
+const util = require("util");
+if (typeof global.TextDecoder === "undefined") {
+  global.TextDecoder = util.TextDecoder;
+}
+
+const OriginalTextDecoder = global.TextDecoder;
+global.TextDecoder = class extends OriginalTextDecoder {
+  constructor(encoding, options) {
+    if (encoding === "ascii" || encoding === "windows-1252") {
+      encoding = "utf-8";
+    }
+    super(encoding, options);
+  }
+};
 const express = require("express");
 
 const PDFDocument = require("pdfkit");
@@ -243,12 +258,10 @@ app.post("/api/generate-pdf", (req, res) => {
 
         if (unit) {
           F("normal", 5.5);
-          doc
-            .fillColor("black")
-            .text(unit, pt(cx + lw), pt(ty + rh - 2.5), {
-              width: pt(vw - 1),
-              align: "right",
-            });
+          doc.fillColor("black").text(unit, pt(cx + lw), pt(ty + rh - 2.5), {
+            width: pt(vw - 1),
+            align: "right",
+          });
         }
       }
       cx += lw + vw;
@@ -286,7 +299,7 @@ app.post("/api/generate-pdf", (req, res) => {
 
   F("normal", 7);
 
-  doc.fillColor("#505050");
+  doc.fillColor("black");
 
   const hdrLines = [
     "REPUBLIQUE ALGERIENNE DEMOCRATIQUE ET POPULAIRE",
@@ -303,14 +316,17 @@ app.post("/api/generate-pdf", (req, res) => {
   const hdrStep = [3.2, 3.2, 3.2, 3.2, 3.2];
 
   hdrLines.forEach((hl, i) => {
-    doc.text(hl, pt(MG), pt(y + 2), { align: "center", width: pt(CW) });
-
+    if (i < 2) {
+      doc.text(hl, pt(MG), pt(y + 2), { align: "center", width: pt(CW) });
+    } else {
+      doc.text(hl, pt(MG), pt(y + 2), { align: "left", width: pt(CW) });
+    }
     y += hdrStep[i];
   });
 
   // date top-right
 
-  F("bold", 8);
+  F("bold", 10);
 
   doc.fillColor("black");
 
@@ -626,7 +642,7 @@ app.post("/api/generate-pdf", (req, res) => {
 
   hline(MG + 13, PAGE_W - MG, y + 3.2);
 
-  y += 5;
+  y += 3;
 
   // ── L'EXAMEN PULMONAIRE (15 mm) ──────────────────────────────────────────
 
@@ -660,7 +676,7 @@ app.post("/api/generate-pdf", (req, res) => {
 
   hline(MG + 10, PAGE_W - MG, y + 3.2);
 
-  y += 5;
+  y += 3;
 
   // ── L'EXAMEN NEUROLOGIQUE (14 mm) ────────────────────────────────────────
 
@@ -742,7 +758,7 @@ app.post("/api/generate-pdf", (req, res) => {
     y,
     bH,
   );
-  y += bH + 3;
+  y += bH + 4;
 
   // ── INTUBATION / DMT / TECHNIQUE (20 mm) ─────────────────────────────────
 
@@ -831,22 +847,6 @@ app.post("/api/generate-pdf", (req, res) => {
       0.4,
     );
 
-    if (isOn) {
-      doc
-
-        .strokeColor("white")
-
-        .lineWidth(0.8)
-
-        .moveTo(pt(pslX + 0.7), pt(y + 0.9))
-
-        .lineTo(pt(pslX + 1.7), pt(y + 2.0))
-
-        .lineTo(pt(pslX + 3.0), pt(y - 0.1))
-
-        .stroke();
-    }
-
     doc.fillColor("black");
 
     F(isOn ? "bold" : "normal", 8);
@@ -919,7 +919,7 @@ app.post("/api/generate-pdf", (req, res) => {
   // A4 = 297mm; we keep the signature block (~14mm tall) above 283mm,
   // and at minimum 4mm below the last content line.
   const SIG_MAX_Y = 275; // mm from top — signature title starts here at most
-  y = Math.min(y + 4, SIG_MAX_Y);
+  y = Math.min(y + 2, SIG_MAX_Y);
 
   // ── SIGNATURE (10 mm) ────────────────────────────────────────────────────
 

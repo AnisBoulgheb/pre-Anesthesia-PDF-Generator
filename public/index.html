@@ -446,7 +446,7 @@
 
         <div class="field"><label>Adresse</label><input type="text" id="adresse" placeholder="Adresse du patient"></div>
 
-        <div class="field"><label>Téléphone</label><input type="tel" id="tel" placeholder="0X XX XX XX XX"></div>
+        <div class="field"><label>Téléphone</label><input type="tel" id="tel" placeholder="0XXXXXXXXX" maxlength="10" pattern="0[0-9]{9}" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
 
         <div class="field"><label>Date de consultation</label><input type="date" id="date_consult"></div>
 
@@ -957,6 +957,17 @@
 
   function generatePDF() {
 
+    // Phone validation
+    const telVal = v('tel');
+    if (telVal && !/^0[0-9]{9}$/.test(telVal)) {
+      showToast('Numéro de téléphone invalide (format: 0XXXXXXXXX)');
+      const telEl = document.getElementById('tel');
+      telEl.focus();
+      telEl.style.borderColor = '#8a1a1a';
+      setTimeout(() => telEl.style.borderColor = '', 3000);
+      return;
+    }
+
     const { jsPDF } = window.jspdf;
 
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -1061,7 +1072,7 @@ const cell = (x, xw, yr, h, text, align = 'C', bold = false, fontSize = 8) => {
 
     setFont('normal', 7);
 
-    doc.setTextColor(80,80,80);
+    doc.setTextColor(0,0,0);
 
     doc.text('REPUBLIQUE ALGERIENNE DEMOCRATIQUE ET POPULAIRE', W/2, y + 3, { align: 'center' });
 
@@ -1071,15 +1082,15 @@ const cell = (x, xw, yr, h, text, align = 'C', bold = false, fontSize = 8) => {
 
     y += 5;
 
-    doc.text('DIRECTION DE LA SANTE ET LA POPULATION DE LA WILAYA DE TLEMCEN', W/2, y + 3, { align: 'center' });
+    doc.text('DIRECTION DE LA SANTE ET LA POPULATION DE LA WILAYA DE TLEMCEN', margin, y + 3, { align: 'left' });
 
     y += 4;
 
-    doc.text('ETABLISSEMENT PUBLIC DE SANTE DE PROXIMITE DE SEBDOU', W/2, y + 3, { align: 'center' });
+    doc.text('ETABLISSEMENT PUBLIC DE SANTE DE PROXIMITE DE SEBDOU', margin, y + 3, { align: 'left' });
 
     y += 4;
 
-    doc.text('POLYCLINIQUE DE SEBDOU', W/2, y + 3, { align: 'center' });
+    doc.text('POLYCLINIQUE DE SEBDOU', margin, y + 3, { align: 'left' });
 
     y += 6;
 
@@ -1115,7 +1126,8 @@ if (rawDate) {
 
   dateVal = `${dd}/${mm}/${yyyy}`;
 
-}    doc.setTextColor(0,0,0);
+}    setFont('bold', 10);
+    doc.setTextColor(0,0,0);
 
     doc.text('Date: ' + dateVal, W - margin, y - 2, { align: 'right' });
 
@@ -1354,7 +1366,7 @@ if (rawDate) {
     setFont('bold', 8); doc.text('FEVG:', margin, y);
     setFont('normal', 8); doc.text(v('fevg') ? v('fevg') + ' %' : '', margin + 13, y);
     line(margin + 13, y + 1, W - margin, y + 1, [200,200,200], 0.2);
-    y += 7;
+    y += 4;
 
 
 
@@ -1366,7 +1378,7 @@ if (rawDate) {
 
     setFont('bold', 8); doc.text('RX:', margin, y); setFont('normal', 8); doc.text(v('rx'), margin + 10, y); line(margin + 10, y + 1, W - margin, y + 1, [200,200,200], 0.2); y += 5;
 
-    setFont('bold', 8); doc.text('EFR:', margin, y); setFont('normal', 8); doc.text(v('efr'), margin + 10, y); line(margin + 10, y + 1, W - margin, y + 1, [200,200,200], 0.2); y += 7;
+    setFont('bold', 8); doc.text('EFR:', margin, y); setFont('normal', 8); doc.text(v('efr'), margin + 10, y); line(margin + 10, y + 1, W - margin, y + 1, [200,200,200], 0.2); y += 4;
 
 
 
@@ -1456,7 +1468,7 @@ if (rawDate) {
     cell(margin, 25, y, bilanH, 'AUTRE', 'C', true, 8);
     cell(margin + 25, contentW - 25, y, bilanH, v('autre_bilan'), 'L', false, 8);
     rect(margin, contentW, y, bilanH, null, [0,0,0], 0.4);
-    y += bilanH + 2;
+    y += bilanH + 4;
 
 
 
@@ -1509,14 +1521,6 @@ if (rawDate) {
       const isChecked = checked(id);
 
       rect(pslX, 4, y - 3, 4, isChecked ? [0,0,0] : [255,255,255], [0,0,0], 0.4);
-
-      if (isChecked) {
-
-        setFont('bold', 7); doc.setTextColor(255,255,255);
-
-        doc.text('✓', pslX + 2, y + 0.2);
-
-      }
 
       doc.setTextColor(0,0,0);
 
@@ -1583,7 +1587,7 @@ if (rawDate) {
 
 
 
-    y += 4;
+    y += 2;
 
 
 
